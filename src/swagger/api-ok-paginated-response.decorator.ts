@@ -1,15 +1,17 @@
-import { applyDecorators, Type } from '@nestjs/common'
-import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger'
-import { ReferenceObject, SchemaObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface'
-import { PaginateConfig } from '../paginate'
-import { PaginatedDocumented } from './paginated-swagger.type'
+import { applyDecorators, Type } from '@nestjs/common';
+import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
+import {
+    ReferenceObject,
+    SchemaObject,
+} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import { PaginatedDocumented } from './paginated-swagger.type';
+import { PaginateConfig } from '../interfaces/paginate-config';
 
 export const ApiOkPaginatedResponse = <DTO extends Type<unknown>>(
     dataDto: DTO,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    paginatedConfig: PaginateConfig<any>
+    paginatedConfig: PaginateConfig<any>,
 ) => {
-    const cols = paginatedConfig?.filterableColumns || {}
+    const cols = paginatedConfig?.filterableColumns || {};
 
     return applyDecorators(
         ApiExtraModels(PaginatedDocumented, dataDto),
@@ -48,10 +50,13 @@ export const ApiOkPaginatedResponse = <DTO extends Type<unknown>>(
                                                             },
                                                         },
                                                     ],
-                                                }
-                                                return acc
+                                                };
+                                                return acc;
                                             },
-                                            {} as Record<string, SchemaObject | ReferenceObject>
+                                            {} as Record<
+                                                string,
+                                                SchemaObject | ReferenceObject
+                                            >,
                                         ),
                                     },
                                 },
@@ -60,6 +65,6 @@ export const ApiOkPaginatedResponse = <DTO extends Type<unknown>>(
                     },
                 ],
             },
-        })
-    )
-}
+        }),
+    );
+};

@@ -1,28 +1,43 @@
-import { applyDecorators } from '@nestjs/common'
-import { ApiQuery } from '@nestjs/swagger'
-import { FilterComparator } from '../filter'
-import { FilterOperator, FilterSuffix, PaginateConfig, PaginationLimit } from '../paginate'
+import { applyDecorators } from '@nestjs/common';
+import { ApiQuery } from '@nestjs/swagger';
+import { PaginationLimit } from '../constants/pagination-limit';
+import { FilterComparator } from '../enums/filter-comparator.enum';
+import { FilterOperator } from '../enums/filter-operator.enum';
+import { FilterSuffix } from '../enums/filter-suffix.enum';
+import { PaginateConfig } from '../interfaces/paginate-config';
 
-const DEFAULT_VALUE_KEY = 'Default Value'
+const DEFAULT_VALUE_KEY = 'Default Value';
 
-function p(key: string | 'Format' | 'Example' | 'Default Value' | 'Max Value', value: string) {
+function p(
+    key: string | 'Format' | 'Example' | 'Default Value' | 'Max Value',
+    value: string,
+) {
     return `<p>
              <b>${key}: </b> ${value}
-          </p>`
+          </p>`;
 }
 
 function li(key: string | 'Available Fields', values: string[]) {
-    return `<h4>${key}</h4><ul>${values.map((v) => `<li>${v}</li>`).join('\n')}</ul>`
+    return `<h4>${key}</h4><ul>${values.map((v) => `<li>${v}</li>`).join('\n')}</ul>`;
 }
 
 export function SortBy(paginationConfig: PaginateConfig<any>) {
     const defaultSortMessage = paginationConfig.defaultSortBy
-        ? paginationConfig.defaultSortBy.map(([col, order]) => `${col}:${order}`).join(',')
-        : 'No default sorting specified, the result order is not guaranteed'
+        ? paginationConfig.defaultSortBy
+              .map(([col, order]) => `${col}:${order}`)
+              .join(',')
+        : 'No default sorting specified, the result order is not guaranteed';
 
     const sortBy = paginationConfig.sortableColumns.reduce((prev, curr) => {
-        return [...prev, `${curr}:ASC`, `${curr}:DESC`]
-    }, [])
+        return [
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            ...prev,
+            `${curr}:ASC`,
+            `${curr}:asc`,
+            `${curr}:DESC`,
+            `${curr}:desc`,
+        ] as string[];
+    }, []);
 
     return ApiQuery({
         name: 'sortBy',
@@ -37,7 +52,7 @@ export function SortBy(paginationConfig: PaginateConfig<any>) {
       `,
         required: false,
         type: 'string',
-    })
+    });
 }
 
 function Limit(paginationConfig: PaginateConfig<any>) {
@@ -52,12 +67,12 @@ function Limit(paginationConfig: PaginateConfig<any>) {
       `,
         required: false,
         type: 'number',
-    })
+    });
 }
 
 function Select(paginationConfig: PaginateConfig<any>) {
     if (!paginationConfig.select) {
-        return
+        return;
     }
 
     return ApiQuery({
@@ -66,18 +81,20 @@ function Select(paginationConfig: PaginateConfig<any>) {
       ${p('Example', paginationConfig.select.slice(0, Math.min(5, paginationConfig.select.length)).join(','))}
       ${p(
           DEFAULT_VALUE_KEY,
-          'By default all fields returns. If you want to select only some fields, provide them in query param'
+          'By default all fields returns. If you want to select only some fields, provide them in query param',
       )}
       `,
         required: false,
         type: 'string',
-    })
+    });
 }
 
 function Where(paginationConfig: PaginateConfig<any>) {
-    if (!paginationConfig.filterableColumns) return
+    if (!paginationConfig.filterableColumns) return;
 
-    const allColumnsDecorators = Object.entries(paginationConfig.filterableColumns)
+    const allColumnsDecorators = Object.entries(
+        paginationConfig.filterableColumns,
+    )
         .map(([fieldName, filterOperations]) => {
             const operations =
                 filterOperations === true || filterOperations === undefined
@@ -86,7 +103,7 @@ function Where(paginationConfig: PaginateConfig<any>) {
                           ...Object.values(FilterSuffix),
                           ...Object.values(FilterOperator),
                       ]
-                    : filterOperations.map((fo) => fo.toString())
+                    : filterOperations.map((fo) => fo.toString());
 
             return ApiQuery({
                 name: `filter.${fieldName}`,
@@ -97,11 +114,11 @@ function Where(paginationConfig: PaginateConfig<any>) {
                 required: false,
                 type: 'string',
                 isArray: true,
-            })
+            });
         })
-        .filter((v) => v !== undefined)
+        .filter((v) => v !== undefined);
 
-    return applyDecorators(...allColumnsDecorators)
+    return applyDecorators(...allColumnsDecorators);
 }
 
 function Page() {
@@ -113,11 +130,11 @@ function Page() {
         `,
         required: false,
         type: 'number',
-    })
+    });
 }
 
 function Search(paginateConfig: PaginateConfig<any>) {
-    if (!paginateConfig.searchableColumns) return
+    if (!paginateConfig.searchableColumns) return;
 
     return ApiQuery({
         name: 'search',
@@ -127,18 +144,20 @@ function Search(paginateConfig: PaginateConfig<any>) {
         `,
         required: false,
         type: 'string',
-    })
+    });
 }
 
 function SearchBy(paginateConfig: PaginateConfig<any>) {
-    if (!paginateConfig.searchableColumns) return
+    if (!paginateConfig.searchableColumns) return;
 
     return ApiQuery({
         name: 'searchBy',
         description: `List of fields to search by term to filter result values
         ${p(
             'Example',
-            paginateConfig.searchableColumns.slice(0, Math.min(5, paginateConfig.searchableColumns.length)).join(',')
+            paginateConfig.searchableColumns
+                .slice(0, Math.min(5, paginateConfig.searchableColumns.length))
+                .join(','),
         )}
         ${p(DEFAULT_VALUE_KEY, 'By default all fields mentioned below will be used to search by term')}
         ${li('Available Fields', paginateConfig.searchableColumns)}
@@ -146,7 +165,7 @@ function SearchBy(paginateConfig: PaginateConfig<any>) {
         required: false,
         isArray: true,
         type: 'string',
-    })
+    });
 }
 
 export const ApiPaginationQuery = (paginationConfig: PaginateConfig<any>) => {
@@ -159,6 +178,6 @@ export const ApiPaginationQuery = (paginationConfig: PaginateConfig<any>) => {
             Search(paginationConfig),
             SearchBy(paginationConfig),
             Select(paginationConfig),
-        ].filter((v): v is MethodDecorator => v !== undefined)
-    )
-}
+        ].filter((v): v is MethodDecorator => v !== undefined),
+    );
+};

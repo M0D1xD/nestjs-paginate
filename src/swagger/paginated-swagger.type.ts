@@ -1,72 +1,72 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { Column, SortBy } from '../helper'
-import { Paginated } from '../paginate'
+import { ApiProperty } from '@nestjs/swagger';
+import { Paginated } from '../classes/paginated.class';
+import { Column, SortBy } from '../types';
 
 class PaginatedLinksDocumented {
     @ApiProperty({
         title: 'Link to first page',
         required: false,
-        type: 'string',
+        type: String,
     })
-    first?: string
+    first?: string;
 
     @ApiProperty({
         title: 'Link to previous page',
         required: false,
-        type: 'string',
+        type: String,
     })
-    previous?: string
+    previous?: string;
 
     @ApiProperty({
         title: 'Link to current page',
         required: false,
-        type: 'string',
+        type: String,
     })
-    current!: string
+    current!: string;
 
     @ApiProperty({
         title: 'Link to next page',
         required: false,
-        type: 'string',
+        type: String,
     })
-    next?: string
+    next?: string;
 
     @ApiProperty({
         title: 'Link to last page',
         required: false,
-        type: 'string',
+        type: String,
     })
-    last?: string
+    last?: string;
 }
 
 export class PaginatedMetaDocumented<T> {
     @ApiProperty({
+        type: Number,
         title: 'Number of items per page',
         required: true,
-        type: 'number',
     })
-    itemsPerPage!: number
+    itemsPerPage!: number;
 
     @ApiProperty({
         title: 'Total number of items',
         required: true,
-        type: 'number',
+        type: Number,
     })
-    totalItems!: number
+    totalItems!: number;
 
     @ApiProperty({
         title: 'Current requested page',
         required: true,
-        type: 'number',
+        type: Number,
     })
-    currentPage!: number
+    currentPage!: number;
 
     @ApiProperty({
         title: 'Total number of pages',
         required: true,
-        type: 'number',
+        type: Number,
     })
-    totalPages!: number
+    totalPages!: number;
 
     @ApiProperty({
         title: 'Sorting by columns',
@@ -81,36 +81,37 @@ export class PaginatedMetaDocumented<T> {
                     },
                     {
                         type: 'string',
+
                         enum: ['ASC', 'DESC'],
                     },
                 ],
             },
         },
     })
-    sortBy!: SortBy<T>
+    sortBy!: SortBy<T>;
 
     @ApiProperty({
         title: 'Search by fields',
         required: false,
         isArray: true,
-        type: 'string',
+        type: String,
     })
-    searchBy!: Column<T>[]
+    searchBy!: Column<T>[];
 
     @ApiProperty({
         title: 'Search term',
         required: false,
-        type: 'string',
+        type: String,
     })
-    search!: string
+    search!: string;
 
     @ApiProperty({
         title: 'List of selected fields',
         required: false,
         isArray: true,
-        type: 'string',
+        type: String,
     })
-    select!: string[]
+    select!: string[];
 
     @ApiProperty({
         title: 'Filters that applied to the query',
@@ -120,8 +121,8 @@ export class PaginatedMetaDocumented<T> {
         additionalProperties: false,
     })
     filter?: {
-        [p: string]: string | string[]
-    }
+        [p: string]: string | string[];
+    };
 }
 
 export class PaginatedDocumented<T> extends Paginated<T> {
@@ -132,17 +133,17 @@ export class PaginatedDocumented<T> extends Paginated<T> {
         type: 'object',
         additionalProperties: false,
     })
-    override data!: T[]
+    override data!: T[];
 
     @ApiProperty({
         title: 'Pagination Metadata',
         required: true,
     })
-    override meta!: PaginatedMetaDocumented<T>
+    override meta!: PaginatedMetaDocumented<T>;
 
     @ApiProperty({
         title: 'Links to pages',
         required: true,
     })
-    override links!: PaginatedLinksDocumented
+    override links!: PaginatedLinksDocumented;
 }
