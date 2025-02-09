@@ -21,6 +21,7 @@ import { PaginateQuery } from './decorator'
 import {
     checkIsArray,
     checkIsEmbedded,
+    checkIsJson,
     checkIsJsonb,
     checkIsRelation,
     extractVirtualProperty,
@@ -305,6 +306,7 @@ export function parseFilter<T>(
             const fixValue = fixColumnFilterValue(column, qb)
 
             const columnProperties = getPropertiesByColumnName(column)
+            const isJson = checkIsJson(qb, columnProperties.column)
             const isJsonb = checkIsJsonb(qb, columnProperties.column)
 
             switch (token.operator) {
@@ -327,7 +329,7 @@ export function parseFilter<T>(
                     params.findOperator = OperatorSymbolToFunction.get(token.operator)(fixValue(token.value))
             }
 
-            if (isJsonb) {
+            if (isJsonb || isJson) {
                 const parts = column.split('.')
                 const dbColumnName = parts[parts.length - 2]
                 const jsonColumnName = parts[parts.length - 1]
@@ -337,7 +339,8 @@ export function parseFilter<T>(
                 const jsonParams = {
                     comparator: params.comparator,
                     findOperator: JsonContains({
-                        [jsonColumnName]: jsonFixValue(token.value),
+                        [jsonColumnName]: token.value,
+                        // [jsonColumnName]: jsonFixValue(token.value),
                         //! Below seems to not be possible from my understanding, https://github.com/typeorm/typeorm/pull/9665
                         //! This limits the functionaltiy to $eq only for json columns, which is a bit of a shame.
                         //! If this is fixed or changed, we can use the commented line below instead.
