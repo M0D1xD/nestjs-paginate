@@ -1,4 +1,4 @@
-import { FindOperator, Repository, SelectQueryBuilder } from 'typeorm'
+import { FindOperator, ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm'
 import { ColumnMetadata } from 'typeorm/metadata/ColumnMetadata'
 
 /**
@@ -169,11 +169,10 @@ export function checkIsArray(qb: SelectQueryBuilder<unknown>, propertyName: stri
     return !!qb?.expressionMap?.mainAlias?.metadata.findColumnWithPropertyName(propertyName)?.isArray
 }
 
-export function checkIsJsonb(qb: SelectQueryBuilder<unknown>, propertyName: string): boolean {
+export function checkIsJson<T extends ObjectLiteral>(qb?: SelectQueryBuilder<T>, propertyName?: string): boolean {
     if (!qb || !propertyName) {
         return false
     }
-
     if (propertyName.includes('.')) {
         const parts = propertyName.split('.')
         const dbColumnName = parts[parts.length - 2]
@@ -182,6 +181,19 @@ export function checkIsJsonb(qb: SelectQueryBuilder<unknown>, propertyName: stri
     }
 
     return qb?.expressionMap?.mainAlias?.metadata.findColumnWithPropertyName(propertyName)?.type === 'json'
+}
+
+export function checkIsJsonb<T extends ObjectLiteral>(qb?: SelectQueryBuilder<T>, propertyName?: string): boolean {
+    if (!qb || !propertyName) return false
+
+    if (propertyName.includes('.')) {
+        const parts = propertyName.split('.')
+        const dbColumnName = parts[parts.length - 2]
+
+        return qb?.expressionMap?.mainAlias?.metadata.findColumnWithPropertyName(dbColumnName)?.type === 'jsonb'
+    }
+
+    return qb?.expressionMap?.mainAlias?.metadata.findColumnWithPropertyName(propertyName)?.type === 'jsonb'
 }
 
 // This function is used to fix the column alias when using relation, embedded or virtual properties
